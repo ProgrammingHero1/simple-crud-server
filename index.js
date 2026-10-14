@@ -14,22 +14,30 @@ app.use(express.json())
 const client = new MongoClient(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vyznij5.mongodb.net/?appName=Cluster0`);
 
 export async function connectToMongoDB() {
-    try{
+    try {
         await client.connect();
         console.log('Successfully Connected to MongoDB');
         return client;
     }
-    catch(err){
+    catch (err) {
         console.dir(err);
     }
 }
 
-await connectToMongoDB();
+const connectedClient = await connectToMongoDB();
+const db = connectedClient.db('simpleCrudDB');
+const users = db.collection('users');
 
-app.get('/', (req, res) =>{
+app.get('/', (req, res) => {
     res.send('Simple CRUD Server is running')
 });
 
-app.listen(port, () =>{
+app.get('/users', async (req, res) => {
+    const cursor = users.find({});
+    const allUsers = await cursor.toArray();
+    res.send(allUsers);
+})
+
+app.listen(port, () => {
     console.log(`Simple CRUD Server is running on port: ${port}`)
 })
